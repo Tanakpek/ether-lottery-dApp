@@ -1,0 +1,22 @@
+{
+  "name": "lottery",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@chainlink/contracts": "^0.4.1",
+    "@truffle/hdwallet-provider": "^2.0.14",
+    "bulma": "^0.9.4",
+    "dotenv": "^16.0.2",
+    "next": "^12.3.0",
+    "solc": "^0.8.17",
+    "truffle": "^5.5.29",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "web3": "^1.7.5"
+  }
+}
