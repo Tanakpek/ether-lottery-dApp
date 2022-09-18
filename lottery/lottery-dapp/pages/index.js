@@ -16,15 +16,17 @@ export default function Home() {
   const [lotteryHist, setLotteryHist] = useState('')
   const [lotteryId, setLotteryId] = useState()
 
-  useEffect(() => {
-    updateState()
-  },[lcContract])
-
   const updateState = () => {
     if(lcContract) getPot()
     if(lcContract) getPlayers()
     if(lcContract) getLotteryId()
   }
+
+  useEffect(() => {
+    updateState()
+  },[lcContract])
+
+
 
 
   const getPot = async () => {
