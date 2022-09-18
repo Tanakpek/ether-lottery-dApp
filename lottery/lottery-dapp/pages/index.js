@@ -4,6 +4,7 @@ import 'bulma/css/bulma.css'
 import Web3 from 'web3'
 import LotteryContract from '../blockchain/lottery'
 import { useState, useEffect } from 'react'
+
 export default function Home() {
   const [web3, setWeb3] = useState()
   const [address, setAddress] = useState()
@@ -16,10 +17,15 @@ export default function Home() {
   const [lotteryId, setLotteryId] = useState()
 
   useEffect(() => {
+    updateState()
+  },[lcContract])
+
+  const updateState = () => {
     if(lcContract) getPot()
     if(lcContract) getPlayers()
     if(lcContract) getLotteryId()
-  },[lcContract])
+  }
+
 
   const getPot = async () => {
     const pot = await lcContract.methods.getBalance().call()
@@ -41,12 +47,15 @@ export default function Home() {
         gas: 300000,
         gasPrice:null
       })
+      document.querySelector(".winners").innerHTML = ""
+      updateState()
     } catch(err){
       setError(err.message);
     }
   }
 
   const getHistory = async (id) => {
+    document.querySelector(".winners").innerHTML = ""
     for (let i = parseInt(id); i > 0; i --){
       const winnerAddress = await lcContract.methods.lotteryHistory(i).call()
       const historyObj = {}
@@ -67,6 +76,11 @@ export default function Home() {
     console.log(JSON.stringify(lotteryHist))
   }
 
+  const getOwner = async () => {
+    const owner = await lcContract.methods.getOwner().call()
+    return owner
+  }
+
   const pickWinnerHandler = async () => {
     try{
       await lcContract.methods.payWinner().send(
@@ -75,6 +89,10 @@ export default function Home() {
         gas: 300000,
         gasPrice:null
       })
+      const winner =await lcContract.methods.lotteryHistory(lotteryId).call()
+      setSuccess(`Winner is ${winner}`)
+      document.querySelector(".winners").innerHTML = ""
+      updateState()
     } catch(err){
       setError(err.message);
     }
@@ -83,6 +101,7 @@ export default function Home() {
   const connectWalletHandler = async () => {
     if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined'){
       try{
+        document.querySelector(".winners").innerHTML = ""
         await window.ethereum.request({method:"eth_requestAccounts"})
         const web3 = new Web3(window.ethereum)
         setWeb3(web3)
@@ -93,6 +112,12 @@ export default function Home() {
         const lc = LotteryContract(web3)
         setLcContract(lc)
         // created local contract copy from abii
+        window.ethereum.on('accountsChanged', async () => {
+          const accounts = await web3.eth.getAccounts()
+          console.log(accounts[0])
+          setAddress(accounts[0])
+        })
+
       } catch(err){console.log(err.message);}
     } else {
       console.log('Please install Metamask')
@@ -126,6 +151,7 @@ export default function Home() {
                   <p>Enter the lottery by sending 0.01 Ether</p>
                   <button onClick={enterLotteryHandler} className="button is-large is-link is-light">Play now</button>
                 </div>
+
                 <div className="mt-6">
                   <p><b>Admin only:</b> Pick Winner</p>
                   <button onClick={pickWinnerHandler} className="button is-large is-primary is-light">Pick Winner</button>
@@ -147,10 +173,19 @@ export default function Home() {
                     <div className="card-content">
                       <div className="content">
                         <h2>Lottery History</h2>
-                        <div className="history-entry">
-                          <div>Lottery #1 winner:  </div>
-                          <div><a href="https://etherscan.io/address/0xD616410CdE8e6b2294D46a98A7c3A99d8cDCe0C5" target="_blank">0xD616410CdE8e6b2294D46a98A7c3A99d8cDCe0C5</a></div>
-                        </div>
+                        <div className="winners">
+                        {
+                          (lotteryHist && lotteryHist.length > 0) && lotteryHist.map((item, index) => {
+                            if (lotteryId != item.id){
+                            return (
+                              <div key={index} className="history-entry">
+                                <div>Lottery #{item.id} winner: </div>
+                                <div><a href={`https://etherscan.io/address/${item.address}`} target="_blank">{item.address}</a></div>
+                              </div>
+                            )}
+                          })
+                        }
+                      </div>
                       </div>
                     </div>
                   </div>
