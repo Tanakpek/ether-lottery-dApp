@@ -229,7 +229,7 @@ export default function Home() {
         </div>
       </main>
       <footer className={styles.footer}>
-        <p>&copy; 2022 Block Explorer</p>
+        <p> Note that the smart contract is on the Goerli Testnet. Please acquire GoerliETH through a faucet to test app.</p>
       </footer>
     </div>
   )
